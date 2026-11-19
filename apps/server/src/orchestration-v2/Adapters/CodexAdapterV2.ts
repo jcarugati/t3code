@@ -768,16 +768,7 @@ function codexRuntimeModeTurnDefaults(runtimeMode: RuntimeMode): {
       };
     case "full-access":
       return {
-        // `never` also rejects browser and app access prompts before the client sees them.
-        approvalPolicy: {
-          granular: {
-            mcp_elicitations: true,
-            request_permissions: false,
-            rules: false,
-            sandbox_approval: false,
-            skill_approval: false,
-          },
-        },
+        approvalPolicy: "never",
         approvalsReviewer: "user",
         sandboxPolicy: {
           type: "dangerFullAccess",
@@ -1512,6 +1503,7 @@ function codexThreadRuntimeParams(input: {
   readonly modelSelection?: { readonly model: string };
   readonly runtimePolicy?: ProviderAdapter.ProviderAdapterV2RuntimePolicy;
 }): {
+  readonly approvalPolicy?: "never";
   readonly cwd?: string;
   readonly model?: string;
   readonly config: Readonly<Record<string, Schema.Json>>;
@@ -1526,6 +1518,10 @@ function codexThreadRuntimeParams(input: {
           http_headers: { Authorization: mcpSession.authorizationHeader },
         };
   return {
+    ...(input.runtimePolicy?.runtimeMode === "full-access" &&
+    input.runtimePolicy.approvalPolicy === undefined
+      ? { approvalPolicy: "never" as const }
+      : {}),
     ...(input.runtimePolicy?.cwd == null ? {} : { cwd: input.runtimePolicy.cwd }),
     ...(input.modelSelection === undefined ? {} : { model: input.modelSelection.model }),
     config: {
@@ -7780,11 +7776,11 @@ export const makeCodexAdapterV2 = Effect.fn("makeCodexAdapterV2")(function* (
                 Effect.flatMap((mcpSession) =>
                   resumeNativeThread(threadId, {
                     excludeTurns: true,
+                    ...(input.runtimePolicy.cwd == null ? {} : { cwd: input.runtimePolicy.cwd }),
                     ...codexThreadRuntimeParams({
                       threadId: providerThread.appThreadId,
                       mcpSession,
                       modelSelection: input.modelSelection,
-                      runtimePolicy: input.runtimePolicy,
                     }),
                   }),
                 ),
@@ -8857,11 +8853,11 @@ export const makeCodexAdapterV2 = Effect.fn("makeCodexAdapterV2")(function* (
               if (!loaded) {
                 yield* resumeNativeThread(threadId, {
                   excludeTurns: true,
+                  ...(input.runtimePolicy.cwd == null ? {} : { cwd: input.runtimePolicy.cwd }),
                   ...codexThreadRuntimeParams({
                     threadId: threadInput.providerThread.appThreadId,
                     mcpSession: yield* readMcpSession(threadInput.providerThread.appThreadId),
                     modelSelection: input.modelSelection,
-                    runtimePolicy: input.runtimePolicy,
                   }),
                 });
               }

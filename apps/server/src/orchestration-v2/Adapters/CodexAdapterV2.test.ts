@@ -225,15 +225,7 @@ describe("CodexAdapterV2 runtime policy", () => {
       assert.equal(auto.approvalPolicy, "on-request");
       assert.equal(auto.approvalsReviewer, "auto_review");
       assert.equal(auto.sandboxPolicy?.type, "workspaceWrite");
-      assert.deepEqual(fullAccess.approvalPolicy, {
-        granular: {
-          mcp_elicitations: true,
-          request_permissions: false,
-          rules: false,
-          sandbox_approval: false,
-          skill_approval: false,
-        },
-      });
+      assert.equal(fullAccess.approvalPolicy, "never");
       assert.equal(fullAccess.approvalsReviewer, "user");
       assert.equal(fullAccess.sandboxPolicy?.type, "dangerFullAccess");
     }),
@@ -709,7 +701,7 @@ function codexReplayPreamble(input: {
       frame: {
         id: 2,
         method: "thread/start",
-        params: { config: CodexAdapterV2.CODEX_THREAD_CONFIG },
+        params: { approvalPolicy: "never", config: CodexAdapterV2.CODEX_THREAD_CONFIG },
       },
     },
     {
@@ -2396,6 +2388,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
       );
       assert.deepEqual(requests, [
         {
+          approvalPolicy: "never",
           cwd: "/workspace",
           model: "gpt-5.4",
           config: {
@@ -4131,6 +4124,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
               params: {
                 threadId: nativeThreadId,
                 excludeTurns: true,
+                approvalPolicy: "never",
                 config: CodexAdapterV2.CODEX_THREAD_CONFIG,
               },
             },
@@ -4149,6 +4143,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
               params: {
                 threadId: nativeThreadId,
                 excludeTurns: true,
+                approvalPolicy: "never",
                 config: CodexAdapterV2.CODEX_THREAD_CONFIG,
               },
             },
@@ -4167,6 +4162,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
               params: {
                 threadId: nativeThreadId,
                 excludeTurns: true,
+                approvalPolicy: "never",
                 config: CodexAdapterV2.CODEX_THREAD_CONFIG,
               },
             },
@@ -4249,6 +4245,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
         excludeTurns: true,
         cwd: CODEX_TEST_RUNTIME_POLICY.cwd,
         model: CODEX_TEST_MODEL_SELECTION.model,
+        approvalPolicy: "never",
         config: CodexAdapterV2.CODEX_THREAD_CONFIG,
       };
       const entries: Array<CodexReplay.CodexAppServerReplayEntry> = [
@@ -4364,6 +4361,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
         excludeTurns: true,
         cwd: CODEX_TEST_RUNTIME_POLICY.cwd,
         model: CODEX_TEST_MODEL_SELECTION.model,
+        approvalPolicy: "never",
         config: CodexAdapterV2.CODEX_THREAD_CONFIG,
       };
       const closed: CodexReplay.CodexAppServerReplayEntry = {
@@ -4948,6 +4946,7 @@ describe("CodexAdapterV2 post-settle continuation", () => {
                   excludeTurns: true,
                   cwd: CODEX_TEST_RUNTIME_POLICY.cwd,
                   model: CODEX_TEST_MODEL_SELECTION.model,
+                  approvalPolicy: "never",
                   config: CodexAdapterV2.CODEX_THREAD_CONFIG,
                 },
               },
